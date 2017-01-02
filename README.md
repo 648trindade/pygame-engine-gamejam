@@ -22,4 +22,4 @@ interações entre eles, como colisão.
 
 Cada objeto terá _keys_ referentes a alguns recursos gerenciado pelos 
 _managers_ (imagem, som, fontes, etc), e sua renderização pode ser simples
-ou controlada por alguma animação (_Animation_)
+ou controlada por alguma animação (_Animation_) 

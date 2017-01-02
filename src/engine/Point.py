@@ -1,5 +1,5 @@
 import math
-
+from pygame import Rect
 
 class Point:
     """
@@ -51,27 +51,63 @@ class Point:
 
     def __add__(self, other):
         """
-        Realiza uma soma
-        :param other: outro Point, lista, tupla ou dicionário (com 'x' e 'y')
-        :return: um novo Point com o valor resultante
+        Realiza uma soma com outro ponto ou com um pygame.Rect
+        :param other: outro Point, lista, tupla, dicionário (com 'x' e 'y') ou
+                      pygame.Rect
+        :return: um novo Point com o valor resultante, ou um pygame.Rect se for
+                 somado com um.
         """
-        point = Point(other)
-        res = Point(self)
-        res.x += point.x
-        res.y += point.y
+        if type(other) is Rect:
+            res = Rect(other)
+            res.x += self.x
+            res.y += self.y
+        else:
+            point = Point(other)
+            res = Point(self)
+            res.x += point.x
+            res.y += point.y
         return res
+
+    def __radd__(self, other):
+        """
+        Realiza uma soma à direita com outro ponto ou com um pygame.Rect
+        :param other: outro Point, lista, tupla, dicionário (com 'x' e 'y') ou
+                      pygame.Rect
+        :return: um novo Point com o valor resultante, ou um pygame.Rect se for
+                 somado com um.
+        """
+        return self.__add__(other)
 
     def __sub__(self, other):
         """
-        Realiza uma subtração
-        :param other: outro Point, lista, tupla ou dicionário (com 'x' e 'y')
-        :return: um novo Point com o valor resultante
+        Realiza uma subtração ou com um pygame.Rect
+        :param other: outro Point, lista, tupla, dicionário (com 'x' e 'y') ou
+                      pygame.Rect
+        :return: um novo Point com o valor resultante, ou um pygame.Rect se for
+                 somado com um.
         """
-        point = Point(other)
-        res = Point(self)
-        res.x -= point.x
-        res.y -= point.y
+        if type(other) is Rect:
+            res = Rect(other)
+            res.x = self.x - res.x
+            res.y = self.y - res.x
+        else:
+            point = Point(other)
+            res = Point(self)
+            res.x -= point.x
+            res.y -= point.y
         return res
+
+    def __rsub__(self, other):
+        """
+        Realiza uma subtração à direita com um pygame.Rect
+        :param other: pygame.Rect
+        :return: um novo pygame.Rect com o valor resultante
+        """
+        if type(other) is Rect:
+            res = Rect(other)
+            res.x -= self.x
+            res.y -= self.y
+            return res
 
     def __mul__(self, other):
         """
