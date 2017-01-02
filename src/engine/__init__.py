@@ -1,3 +1,4 @@
-from src.engine.System import System
-from src.engine.GameObject import GameObject
-from src.engine.Scene import Scene
+from engine.System import System
+from engine.GameObject import GameObject
+from engine.Scene import Scene
+from engine.Point import Point
