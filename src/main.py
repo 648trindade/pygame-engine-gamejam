@@ -1,1 +1,3 @@
-import src.engine.System
+from src.engine import System
+
+system = System()
