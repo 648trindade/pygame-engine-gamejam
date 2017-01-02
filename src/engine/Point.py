@@ -249,3 +249,11 @@ class Point:
         """
         point = Point(other)
         return self.x * point.x + self.y * point.y
+
+    def normalize(self):
+        """
+        Calcula o vetor normalizado (largura 1)
+        :return: Point
+        """
+        res = Point(self)
+        return res / self.length()
