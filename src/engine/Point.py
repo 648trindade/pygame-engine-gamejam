@@ -232,6 +232,13 @@ class Point:
         point = Point(other)
         return self.x == point.x and self.y == point.y
 
+    def __str__(self):
+        """
+        Converte o ponto para um formato legível em string
+        :return: str
+        """
+        return "<Point({x}, {y})>".format(x=self.x, y=self.y)
+
     def length(self):
         """
         Trata o objeto como se fosse um vetor geométrico 2D e retorna seu

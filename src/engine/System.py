@@ -2,11 +2,13 @@ import pygame
 import os
 import sys
 from engine.Point import Point
+from engine.managers import Texture
 
 # tamanho fake da tela. Todos os objetos pensam que a tela tem esse tamanho
 SCREEN_SIZE = Point(1920, 1080)
 GAME_NAME = "Jogo"
 GAME_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+
 
 class System:
 
@@ -36,6 +38,12 @@ class System:
         # lista de eventos
         self.events = None
 
+        # retângulo da câmera
+        self.camera = pygame.Rect((0,0), SCREEN_SIZE)
+
+        #
+        self.textures = Texture()
+
     def __del__(self):
         """
         Encerra o sistema. Chamado quando python apaga o objeto System da memória
@@ -57,7 +65,7 @@ class System:
             new_size.x / SCREEN_SIZE.x,
             new_size.y / SCREEN_SIZE.y
         )
-        # Escolhe a menor taxa de proporção pra não redimensionar errado
+        # Escolhe a menor taxa de proporção pra encaixar direitinho na tela
         self.scale = min(proportion.x, proportion.y)
 
         # tamanho real da tela que será renderizada, mantida a proporção da fake
@@ -148,3 +156,34 @@ class System:
         :return:
         """
         return self.events.copy()
+
+    def blit(self, ID, dest, src=None, fixed=False):
+        """
+        Desenha uma surface na tela. Possui suporte para renderização
+         independente da posição da câmera, como é o caso de menus. Se o tamanho
+         de dest é diferente de src, há um redimensionamento.
+        :param ID: ID da surface
+        :param dest: Rect de destino na tela
+        :param src: Rect de origem da surface
+        :param fixed: Determina se a renderização é relativa a camera ou não
+        :return: None
+        """
+        # Pega a textura do manager de texturas
+        texture = self.textures.get(ID)
+        # Se a posição é relativa a câmera
+        if not fixed:
+            # Se alguma porção da surface está aparecendo na tela
+            if self.camera.colliderect(dest):
+                # Pega a posição relativa a câmera
+                _dest = dest - Point(self.camera.topleft)
+                # se os retangulos de origem e destino tem tamanhos diferentes,
+                #  redimensiona a imagem para o tamanho de destino
+                if src and src.size != _dest.size:
+                    texture = pygame.transform.scale(texture, _dest.size)
+                self.screen.blit(texture, _dest, area=src)
+        else:
+            # se os retangulos de origem e destino tem tamanhos diferentes,
+            #  redimensiona a imagem para o tamanho de destino
+            if src and src.size != dest.size:
+                texture = pygame.transform.scale(texture, dest.size)
+            self.screen.blit(texture, dest, area=src)
