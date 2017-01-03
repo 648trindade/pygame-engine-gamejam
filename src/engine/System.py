@@ -2,7 +2,8 @@ import pygame
 import os
 import sys
 from engine.Point import Point
-from engine.managers import Texture
+from engine.Scene import Scene
+from engine.managers.Texture import Texture
 
 # tamanho fake da tela. Todos os objetos pensam que a tela tem esse tamanho
 SCREEN_SIZE = Point(1920, 1080)
@@ -41,8 +42,12 @@ class System:
         # retângulo da câmera
         self.camera = pygame.Rect((0,0), SCREEN_SIZE)
 
-        #
+        # Gerenciador de Texturas
         self.textures = Texture()
+
+        # Clock
+        self.clock = pygame.time.Clock()
+        self.delta_time = 0
 
     def __del__(self):
         """
@@ -57,8 +62,8 @@ class System:
         :param new_size: novo tamanho da janela
         :return: None
         """
-        self.window_size = new_size
-        self.window = pygame.display.set_mode(self.window_size, pygame.HWACCEL)
+        self.window = pygame.display.set_mode(new_size, pygame.HWACCEL | pygame.RESIZABLE)
+        self.window_size = Point(self.window.get_size())
 
         # Proporção em largura e altura da janela com relação ao tamanho fake
         proportion = Point(
@@ -108,7 +113,14 @@ class System:
         :return: None
         """
         # pega os eventos
+        self.delta_time = self.clock.tick(60)
         self.events = pygame.event.get()
+        for event in self.events:
+            if event.type is pygame.QUIT:
+                for scene in self.scene_stack:
+                    scene.state = Scene.STATE_FINISHED
+            elif event.type is pygame.VIDEORESIZE:
+                self.set_window(Point(event.size))
 
         # limpa a tela
         self.window.fill(pygame.Color(0, 0, 0))

@@ -1,3 +1,3 @@
-from src.engine.managers.Font import Font
-from src.engine.managers.Sound import Sound
-from src.engine.managers.Texture import Texture
+from engine.managers.Font import Font
+from engine.managers.Sound import Sound
+from engine.managers.Texture import Texture
