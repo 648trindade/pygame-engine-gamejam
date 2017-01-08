@@ -1,7 +1,7 @@
-from pygame import sprite
+from pygame.sprite import LayeredUpdates as LU
 
 
-class LayeredUpdates(sprite.LayeredUpdates):
+class LayeredUpdates(LU):
 
     def draw(self, system):
         """
@@ -12,6 +12,7 @@ class LayeredUpdates(sprite.LayeredUpdates):
         """
         rect_list = list()
         for sprite in self.sprites():
-            system.blit(sprite.image, sprite.rect, sprite.src, sprite.fixed)
+            #system.blit(sprite.image, sprite.rect, sprite.src, sprite.fixed)
+            sprite.render()
             rect_list.append(sprite.dest)
         return rect_list

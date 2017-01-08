@@ -1,14 +1,17 @@
 import pygame
+import pygame.gfxdraw
 import os
 import sys
 from engine.Point import Point
 from engine.Scene import Scene
 from engine.managers.Texture import Texture
+from engine.managers.Font import Font
 
 # tamanho fake da tela. Todos os objetos pensam que a tela tem esse tamanho
 SCREEN_SIZE = Point(1920, 1080)
 GAME_NAME = "Jogo"
 GAME_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+WHITE_COLOR = (255, 255, 255)
 
 
 class System:
@@ -43,7 +46,8 @@ class System:
         self.camera = pygame.Rect((0,0), SCREEN_SIZE)
 
         # Gerenciador de Texturas
-        self.textures = Texture()
+        self.textures = Texture(GAME_DIR)
+        self.fonts = Font(GAME_DIR)
 
         # Clock
         self.clock = pygame.time.Clock()
@@ -86,7 +90,10 @@ class System:
          cenas na pilha. Se não houver mais cenas, termina.
         :return: None
         """
-        game_data = {'system': self}
+        game_data = {
+            'system': self,
+            'screen_size': SCREEN_SIZE
+        }
 
         while len(self.scene_stack) > 0:
             scene = self.scene_stack[-1] # topo da pilha
@@ -187,15 +194,62 @@ class System:
             # Se alguma porção da surface está aparecendo na tela
             if self.camera.colliderect(dest):
                 # Pega a posição relativa a câmera
-                _dest = dest - Point(self.camera.topleft)
-                # se os retangulos de origem e destino tem tamanhos diferentes,
-                #  redimensiona a imagem para o tamanho de destino
-                if src and src.size != _dest.size:
-                    texture = pygame.transform.scale(texture, _dest.size)
-                self.screen.blit(texture, _dest, area=src)
-        else:
-            # se os retangulos de origem e destino tem tamanhos diferentes,
-            #  redimensiona a imagem para o tamanho de destino
-            if src and src.size != dest.size:
-                texture = pygame.transform.scale(texture, dest.size)
-            self.screen.blit(texture, dest, area=src)
+                dest -= Point(self.camera.topleft)
+            else:
+                # retangulo da imagem esta fora da camera
+                return
+        # se os retangulos de origem e destino tem tamanhos diferentes,
+        #  redimensiona a imagem para o tamanho de destino
+        if src and src.size != dest.size:
+            texture = pygame.transform.scale(texture, dest.size)
+        self.screen.blit(texture, dest, area=src)
+
+    def draw_font(self, text, font_name, size, destination, color=WHITE_COLOR, centered=True, fixed=False):
+        """
+        Renderiza um texto e desenha na tela. Possui suporte para renderização
+         independente da posição da câmera, como é o caso de menus.
+        :param text: Texto a ser renderizado
+        :param font_name: nome da fonte (com extensão) a ser renderizada
+        :param size: tamanho da fonte
+        :param destination: ponto de destino (centro)
+        :param color: cor da fonte
+        :param fixed: Determina se a renderização é relativa a camera ou não
+        :return: None
+        """
+        texture, src = self.fonts.render(text, font_name, size, color)
+        dest = pygame.Rect(destination, src.size)
+        if centered:
+            dest.topleft = Point(dest.topleft) - Point(src.center)
+
+        if not fixed:
+            # Se alguma porção da surface está aparecendo na tela
+            if self.camera.colliderect(dest):
+                # Pega a posição relativa a câmera
+                dest -= Point(self.camera.topleft)
+            else:
+                # retangulo da imagem esta fora da camera
+                return
+        self.screen.blit(texture, dest)
+
+    def draw_geom(self, name, **kargs):
+
+        if not kargs.get("fixed"):
+            if kargs.get("rect"):
+                kargs["rect"] -= Point(self.camera.topleft)
+            elif kargs.get("x") and kargs.get("y"):
+                kargs['x'] -= self.camera.x
+                kargs['y'] -= self.camera.y
+
+        if name == "rectangle":
+            pygame.gfxdraw.rectangle(self.screen, kargs['rect'], kargs['color'])
+        elif name == "box":
+            pygame.gfxdraw.box(self.screen, kargs['rect'], kargs['color'])
+        elif name == "circle":
+            pygame.gfxdraw.circle(self.screen, kargs['x'], kargs['y'],
+                                  kargs['r'], kargs['color'])
+        elif name == "aacicle":
+            pygame.gfxdraw.aacircle(self.screen, kargs['x'], kargs['y'],
+                                  kargs['r'], kargs['color'])
+        elif name == "filled_circle":
+            pygame.gfxdraw.filled_circle(self.screen, kargs['x'], kargs['y'],
+                                  kargs['r'], kargs['color'])

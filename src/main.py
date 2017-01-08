@@ -1,6 +1,7 @@
-from engine import System, Scene
+from engine import System
+from MyScene import MyScene
 
 system = System()
-scene = Scene("teste")
+scene = MyScene()
 system.push_scene(scene)
 system.run() # entra no laço principal do jogo

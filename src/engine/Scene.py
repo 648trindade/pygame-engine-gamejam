@@ -1,3 +1,5 @@
+from engine.LayeredUpdates import LayeredUpdates
+
 class Scene:
     STATE_NEW = 1
     STATE_RUNNING = 2
@@ -12,6 +14,8 @@ class Scene:
         self.name = name
         self.state = Scene.STATE_NEW
         self.system = None
+        self.game_objects = list()
+        self.layers = LayeredUpdates()
 
     def start(self, game_data):
         """
@@ -21,6 +25,7 @@ class Scene:
         :return: None
         """
         self.system = game_data['system']
+        self.layers.add(*self.game_objects)
 
     def resume(self):
         """
@@ -58,10 +63,11 @@ class Scene:
             self.system.render()
 
     def update(self):
-        pass
+        for go in self.game_objects:
+            go.update()
 
     def render(self):
-        pass
+        self.layers.draw(self.system)
 
     def is_new(self):
         """

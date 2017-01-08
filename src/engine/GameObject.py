@@ -8,6 +8,12 @@ class GameObject(Sprite):
         Sprite.__init__(self, groups)
 
         self.image = name
-        self.rect = Rect()
-        self.src = Rect()
+        self.rect = Rect(0,0,0,0)
+        self.src = Rect(0,0,0,0)
         self.fixed = False
+
+    def update(self):
+        pass
+
+    def render(self):
+        pass
