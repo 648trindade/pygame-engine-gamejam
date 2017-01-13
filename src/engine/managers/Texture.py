@@ -10,7 +10,7 @@ FORMATS_SUPPORTED = ("png", "bmp", "jpg")
 class Texture:
 
     def __init__(self, game_dir):
-        self.path = game_dir + TEXTURE_PATH
+        self.path = game_dir + '/..' + TEXTURE_PATH
         self.surfaces = dict()
         self.load(SHARED_FOLDER)
 
