@@ -10,7 +10,7 @@ from engine.managers.Font import Font
 # tamanho fake da tela. Todos os objetos pensam que a tela tem esse tamanho
 SCREEN_SIZE = Point(1920, 1080)
 GAME_NAME = "Jogo"
-GAME_DIR = os.path.dirname(os.path.abspath(sys.argv[0]))
+GAME_DIR = os.path.dirname(os.path.abspath(sys.argv[0])) + "/../"
 WHITE_COLOR = (255, 255, 255)
 
 
@@ -200,11 +200,12 @@ class System:
                 return
         # se os retangulos de origem e destino tem tamanhos diferentes,
         #  redimensiona a imagem para o tamanho de destino
-        if src and src.size != dest.size:
+        if src and (Point(src.size) != Point(dest.size)):
             texture = pygame.transform.scale(texture, dest.size)
         self.screen.blit(texture, dest, area=src)
 
-    def draw_font(self, text, font_name, size, destination, color=WHITE_COLOR, centered=True, fixed=False):
+    def draw_font(self, text, font_name, size, destination, color=WHITE_COLOR,
+                  centered=True, fixed=False):
         """
         Renderiza um texto e desenha na tela. Possui suporte para renderização
          independente da posição da câmera, como é o caso de menus.

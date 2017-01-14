@@ -8,12 +8,23 @@ class GameObject(Sprite):
         Sprite.__init__(self, groups)
 
         self.image = name
-        self.rect = Rect(0,0,0,0)
+        self.dest = Rect(0,0,0,0)
         self.src = Rect(0,0,0,0)
         self.fixed = False
+        self.tags = list()
 
     def update(self):
         pass
 
     def render(self):
         pass
+
+    def has_tag(self, tag):
+        return tag in self.tags
+
+    def on_collision(self, other_go):
+        pass
+
+    @property
+    def rect(self):
+        return self.dest

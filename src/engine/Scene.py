@@ -1,3 +1,4 @@
+from pygame.sprite import spritecollide
 from engine.LayeredUpdates import LayeredUpdates
 
 class Scene:
@@ -63,6 +64,12 @@ class Scene:
             self.system.render()
 
     def update(self):
+        for go in self.game_objects:
+            collisions = spritecollide(go, self.layers, False)
+            collisions.remove(go)
+            for go_collided in collisions:
+                go.on_collision(go_collided)
+
         for go in self.game_objects:
             go.update()
 

@@ -2,7 +2,7 @@ from os.path import isdir
 from os import listdir
 from pygame import image
 
-TEXTURE_PATH = "/etc/img/"
+TEXTURE_PATH = "etc/img/"
 SHARED_FOLDER = "shared/"
 FORMATS_SUPPORTED = ("png", "bmp", "jpg")
 

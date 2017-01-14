@@ -2,7 +2,7 @@ from os.path import isdir
 from os import listdir
 from pygame import freetype
 
-FONTS_PATH = "/../etc/font/"
+FONTS_PATH = "etc/font/"
 
 class Font:
 
