@@ -1,18 +1,7 @@
 from pygame.sprite import spritecollide
-from math import hypot
 from engine.LayerRender import LayerRender
 from engine import GameObject
-
-def distance_pt_rect(point, rect):
-    """
-    Retorna a distancia entre um ponto e um retangulo
-    :param point: ponto
-    :param rect: retangulo
-    :return: float, distancia
-    """
-    dx = max(min(point[0], rect.right), rect.left)
-    dy = max(min(point[1], rect.bottom), rect.top)
-    return hypot(point[0] - dx, point[1] - dy)
+from engine import Physics
 
 class Scene:
     STATE_NEW = 1
@@ -92,34 +81,6 @@ class Scene:
     def render(self):
         self.layers.draw(self.system)
 
-    def is_new(self):
-        """
-        Diz se a cena recém foi criada
-        :return: bool
-        """
-        return self.state is Scene.STATE_NEW
-
-    def is_paused(self):
-        """
-        Diz se a cena está pausada
-        :return: bool
-        """
-        return self.state is Scene.STATE_PAUSED
-
-    def is_finished(self):
-        """
-        Diz se a cena está encerrada
-        :return: bool
-        """
-        return self.state is Scene.STATE_FINISHED
-
-    def is_running(self):
-        """
-        Diz se a cena está em execução
-        :return: bool
-        """
-        return self.state is Scene.STATE_RUNNING
-
     def get_gos_with_tag(self, tag):
         """
         Retorna todos os Game Objects que possuem a tag dad
@@ -156,7 +117,7 @@ class Scene:
         game_objects.remove(origin)
 
         for go in game_objects:
-            this_distance = distance_pt_rect(position, go.rect)
+            this_distance = Physics.distance_pt_rect(position, go.rect)
             if this_distance < distance:
                 distance = this_distance
                 nearest = go
@@ -185,7 +146,36 @@ class Scene:
 
         gos = list()
         for go in game_objects:
-            distance = distance_pt_rect(position, go.rect)
+            distance = Physics.distance_pt_rect(position, go.rect)
             if distance <= range_:
                 gos.append(go)
         return gos
+
+
+    def is_new(self):
+        """
+        Diz se a cena recém foi criada
+        :return: bool
+        """
+        return self.state is Scene.STATE_NEW
+
+    def is_paused(self):
+        """
+        Diz se a cena está pausada
+        :return: bool
+        """
+        return self.state is Scene.STATE_PAUSED
+
+    def is_finished(self):
+        """
+        Diz se a cena está encerrada
+        :return: bool
+        """
+        return self.state is Scene.STATE_FINISHED
+
+    def is_running(self):
+        """
+        Diz se a cena está em execução
+        :return: bool
+        """
+        return self.state is Scene.STATE_RUNNING

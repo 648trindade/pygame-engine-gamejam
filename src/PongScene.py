@@ -1,6 +1,6 @@
 from pygame import Color, Rect, mouse, Surface, gfxdraw
 from random import random, choice
-from engine import Scene, GameObject, Point
+from engine import Scene, GameObject, Point, Physics
 from DebugInfo import DebugInfo
 
 
@@ -34,7 +34,7 @@ class PongBall(GameObject):
     def update(self):
         self.dest.topleft += self.vel
         if self.dest.top not in range(0, self.system.camera.bottom - self.dest.height):
-            self.vel.y *= -1
+            self.vel = Physics.reflect(self.vel, Point(0, 1 if self.dest.top < 0 else -1))
 
         if self.dest.left not in range(10, self.system.camera.right - self.dest.width - 10):
             self.scene.state = Scene.STATE_FINISHED
@@ -44,10 +44,13 @@ class PongBall(GameObject):
         self.system.draw_geom('filled_circle', r=10, x=self.dest.centerx, y=self.dest.centery, color=self.color)
 
     def on_collision(self, other_go):
-        if PongPaddle in type(other_go).mro():
-            self.vel += other_go.vel
-            self.vel.y *= 10/self.vel.length()
-            self.vel.x *= -1
+        if other_go.has_tag('paddle'):
+            #self.vel += other_go.vel
+            #self.vel.y *= 10/self.vel.length()
+            #self.vel.x *= -1
+            self.vel = Physics.reflect(self.vel, other_go.normal)
+            self.dest.left = min(self.screen_size.x - 10 - other_go.dest.width, self.dest.left)
+            self.dest.left = max(10 + other_go.dest.width, self.dest.left)
 
 
 class PongPaddle(GameObject):
@@ -58,12 +61,15 @@ class PongPaddle(GameObject):
         self.dest = Rect(center - Point(10, 50), (20, 100))
         self._layer = 2
         self.vel = Point(0, 0)
+        self.tags.append('paddle')
+        self.normal = Point(0, 0)
 
     def update(self):
         self.dest.topleft = Point(
             max(0, min(self.dest.x + self.vel.x, self.screen_size.x - self.dest.width)),
             max(0, min(self.dest.y + self.vel.y, self.screen_size.y - self.dest.height))
         ).int()
+
 
     def render(self):
         self.system.draw_geom("box", rect=self.dest, color=self.color)
@@ -75,6 +81,7 @@ class PongPaddleIA(PongPaddle):
         self.vel = Point(ball.dest.center) - Point(self.dest.center)
         self.vel = self.vel.normalize() * 10
         self.vel.x = 0
+        self.normal = Point(1, 0)
 
         PongPaddle.update(self)
 
@@ -85,6 +92,7 @@ class PongPaddlePlayer(PongPaddle):
         self.vel = Point(move) - Point(self.dest.center)
         self.vel = self.vel.normalize() * 10
         self.vel.x = 0
+        self.normal = Point(-1, 0)
 
         PongPaddle.update(self)
 
@@ -113,9 +121,7 @@ class GameOverScene(Scene):
 
     def start(self, game_data):
         Scene.start(self, game_data)
-        self.back = Surface(game_data['screen_size'])
-        self.back.blit(self.system.screen, (0,0))
-        gfxdraw.box(self.back, self.system.camera, (0,0,0,127))
+        self.system.register_last_frame()
 
     def update(self):
         Scene.update(self)
@@ -125,7 +131,7 @@ class GameOverScene(Scene):
             self.system.swap_scene(PongScene())
 
     def render(self):
-        # FIXME: não pode fazer essa linha ahsuehaseuh
-        self.system.screen.blit(self.back, (0, 0))
+        self.system.blit('last_frame', self.system.camera)
+        self.system.draw_geom('box', rect=self.system.camera, color=(0,0,0,127))
         self.system.draw_font(self.text, "8bit16.ttf", 100, self.screen_size//2,
                               centered=True, fixed=True)

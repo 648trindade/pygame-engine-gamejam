@@ -284,3 +284,7 @@ class System:
     def unload_assets(self, name):
         self.textures.unload(name)
         self.texturespecs.unload(name)
+
+    def register_last_frame(self):
+        self.textures.surfaces['last_frame'] = pygame.Surface(SCREEN_SIZE)
+        self.textures.surfaces['last_frame'].blit(self.screen, (0, 0))
