@@ -1,0 +1,13 @@
+{
+    "width": 256,
+    "height": 128,
+    "tile_width": 128,
+    "tile_height": 128,
+    "num_tiles": 2,
+    "animations":{
+        "standby": {
+            "time": 250,
+            "tiles": [0, 1]
+        }
+    }
+}
