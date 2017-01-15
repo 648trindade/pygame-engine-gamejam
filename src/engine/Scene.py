@@ -1,5 +1,18 @@
 from pygame.sprite import spritecollide
+from math import hypot
 from engine.LayeredUpdates import LayeredUpdates
+from engine.GameObject import GameObject
+
+def distance_pt_rect(point, rect):
+    """
+    Retorna a distancia entre um ponto e um retangulo
+    :param point: ponto
+    :param rect: retangulo
+    :return: float, distancia
+    """
+    dx = max(min(point[0], rect.right), rect.left)
+    dy = max(min(point[1], rect.bottom), rect.top)
+    return hypot(point[0] - dx, point[1] - dy)
 
 class Scene:
     STATE_NEW = 1
@@ -25,7 +38,9 @@ class Scene:
         :param game_data: dados do sistema
         :return: None
         """
+        assert self == game_data['scene']
         self.system = game_data['system']
+        self.screen_size = game_data['screen_size']
         self.layers.add(*self.game_objects)
 
     def resume(self):
@@ -66,7 +81,8 @@ class Scene:
     def update(self):
         for go in self.game_objects:
             collisions = spritecollide(go, self.layers, False)
-            collisions.remove(go)
+            if collisions.count(go) > 0:
+                collisions.remove(go)
             for go_collided in collisions:
                 go.on_collision(go_collided)
 
@@ -103,3 +119,73 @@ class Scene:
         :return: bool
         """
         return self.state is Scene.STATE_RUNNING
+
+    def get_gos_with_tag(self, tag):
+        """
+        Retorna todos os Game Objects que possuem a tag dad
+        :param tag: tag
+        :return: Lista de GameObjects
+        """
+        gos = list()
+        for go in self.game_objects:
+            if go.has_tag(tag):
+                gos.append(go)
+        return gos
+
+    def get_nearest_go(self, origin, tag=None):
+        """
+        Retorna o game object mais proximo de uma posição
+        :param origin: posição ou game object
+        :param tag: tag do game object procurado (opcional)
+        :return: game object ou None
+        """
+        distance = float('inf')
+        nearest = None
+
+        # testa se origin é um game object
+        if GameObject in type(origin).mro():
+            position = origin.rect.center
+        else:
+            position = origin
+
+        # testa se tem uma tag e filtra os gos
+        if tag:
+            game_objects = self.get_gos_with_tag(tag)
+        else:
+            game_objects = self.game_objects
+        game_objects.remove(origin)
+
+        for go in game_objects:
+            this_distance = distance_pt_rect(position, go.rect)
+            if this_distance < distance:
+                distance = this_distance
+                nearest = go
+        return nearest
+
+    def get_gos_in_range(self, origin, range_, tag=None):
+        """
+        Retorna todos os game_objects dada uma distancia
+        :param origin:
+        :param range_:
+        :param tag:
+        :return:
+        """
+        # testa se origin é um game object
+        if GameObject in type(origin).mro():
+            position = origin.rect.center
+        else:
+            position = origin
+
+        # testa se tem uma tag e filtra os gos
+        if tag:
+            game_objects = self.get_gos_with_tag(tag)
+        else:
+            game_objects = self.game_objects
+        game_objects.remove(origin)
+
+        gos = list()
+        for go in game_objects:
+            distance = distance_pt_rect(position, go.rect)
+            if distance <= range_:
+                gos.append(go)
+        return gos

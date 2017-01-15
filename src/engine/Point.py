@@ -263,4 +263,7 @@ class Point:
         :return: Point
         """
         res = Point(self)
-        return res / self.length()
+        try:
+            return res / self.length()
+        except:
+            return Point(0, 0)

@@ -84,6 +84,12 @@ class System:
         #  tarjas pretas)
         self.offset = (self.window_size - self.screen_real_size)//2
 
+    def get_mouse_pos(self):
+        return (Point(pygame.mouse.get_pos()) - self.offset) / self.scale
+
+    def get_mouse_move(self):
+        return (Point(pygame.mouse.get_rel())) / self.scale
+
     def run(self):
         """
         Loop das cenas. Roda uma cena até que termine, então procura por novas
@@ -92,11 +98,13 @@ class System:
         """
         game_data = {
             'system': self,
-            'screen_size': SCREEN_SIZE
+            'screen_size': SCREEN_SIZE,
+            'scene': None
         }
 
         while len(self.scene_stack) > 0:
             scene = self.scene_stack[-1] # topo da pilha
+            game_data['scene'] = scene
 
             if scene.is_new():
                 scene.start(game_data)
