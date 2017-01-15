@@ -1,9 +1,11 @@
 from engine import System
-from MyScene import MyScene
-from MyPong import MyPong
+from TestScene import TestScene
+from PongScene import PongScene
+from TextureTestScene import TextureTestScene
 
 system = System()
-#scene = MyScene()
-scene = MyPong()
+#scene = TestScene()
+#scene = PongScene()
+scene = TextureTestScene()
 system.push_scene(scene)
 system.run() # entra no laço principal do jogo

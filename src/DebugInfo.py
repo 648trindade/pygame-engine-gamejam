@@ -1,6 +1,5 @@
 from pygame import Rect, Color
-from engine.GameObject import GameObject
-from engine.Point import Point
+from engine import GameObject, Point
 
 
 class DebugInfo(GameObject):

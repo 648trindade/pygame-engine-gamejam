@@ -10,9 +10,13 @@ class GameObject(Sprite):
         self.__dict__.update(game_data)
         self.image = name
         self.dest = Rect(0,0,0,0)
-        self.src = Rect(0,0,0,0)
         self.fixed = False
         self.tags = list()
+        self.animation = None
+        if self.image:
+            self.src = self.system.get_image_size(self.image)
+        else:
+            self.src = Rect(0,0,0,0)
 
     def __str__(self):
         return "<" + str(type(self).__name__) + " at " + \
@@ -22,7 +26,10 @@ class GameObject(Sprite):
         pass
 
     def render(self):
-        pass
+        if self.animation:
+            self.animation.render(self.dest)
+        else:
+            self.system.blit(self.image, self.dest, self.src, self.fixed)
 
     def has_tag(self, tag):
         return tag in self.tags

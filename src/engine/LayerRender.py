@@ -1,7 +1,7 @@
 from pygame.sprite import LayeredUpdates as LU
 
 
-class LayeredUpdates(LU):
+class LayerRender(LU):
 
     def draw(self, system):
         """

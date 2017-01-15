@@ -1,7 +1,7 @@
 from pygame.sprite import spritecollide
 from math import hypot
-from engine.LayeredUpdates import LayeredUpdates
-from engine.GameObject import GameObject
+from engine.LayerRender import LayerRender
+from engine import GameObject
 
 def distance_pt_rect(point, rect):
     """
@@ -29,7 +29,7 @@ class Scene:
         self.state = Scene.STATE_NEW
         self.system = None
         self.game_objects = list()
-        self.layers = LayeredUpdates()
+        self.layers = LayerRender()
 
     def start(self, game_data):
         """

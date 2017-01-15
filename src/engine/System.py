@@ -6,9 +6,11 @@ from engine.Point import Point
 from engine.Scene import Scene
 from engine.managers.Texture import Texture
 from engine.managers.Font import Font
+from engine.managers.TextureSpec import TextureSpec
 
 # tamanho fake da tela. Todos os objetos pensam que a tela tem esse tamanho
 SCREEN_SIZE = Point(1920, 1080)
+WINDOW_SIZE = Point(800, 600)
 GAME_NAME = "Jogo"
 GAME_DIR = os.path.dirname(os.path.abspath(sys.argv[0])) + "/../"
 WHITE_COLOR = (255, 255, 255)
@@ -31,7 +33,7 @@ class System:
         self.scale = None
         self.screen_real_size = None
         self.offset = None
-        self.set_window(Point(800, 600))
+        self.set_window(WINDOW_SIZE)
 
         pygame.display.set_caption(GAME_NAME)
         # pygame.display.set_icon()
@@ -48,6 +50,7 @@ class System:
         # Gerenciador de Texturas
         self.textures = Texture(GAME_DIR)
         self.fonts = Font(GAME_DIR)
+        self.texturespecs = TextureSpec(GAME_DIR)
 
         # Clock
         self.clock = pygame.time.Clock()
@@ -84,12 +87,6 @@ class System:
         #  tarjas pretas)
         self.offset = (self.window_size - self.screen_real_size)//2
 
-    def get_mouse_pos(self):
-        return (Point(pygame.mouse.get_pos()) - self.offset) / self.scale
-
-    def get_mouse_move(self):
-        return (Point(pygame.mouse.get_rel())) / self.scale
-
     def run(self):
         """
         Loop das cenas. Roda uma cena até que termine, então procura por novas
@@ -106,7 +103,9 @@ class System:
             scene = self.scene_stack[-1] # topo da pilha
             game_data['scene'] = scene
 
+
             if scene.is_new():
+                self.load_assets(scene.name)
                 scene.start(game_data)
             elif scene.is_paused():
                 scene.resume()
@@ -118,6 +117,7 @@ class System:
                 scene.pause()
             elif scene.is_finished():
                 scene.finish()
+                self.unload_assets(scene.name)
                 if scene == self.scene_stack[-1]: # se a cena estiver no topo
                     self.pop_scene()
 
@@ -151,39 +151,6 @@ class System:
         self.window.blit(viewport, self.offset)
         pygame.display.update()
 
-    def push_scene(self, scene):
-        """
-        Adiciona uma cena no topo da pilha
-        :param scene: Cena nova
-        :return: None
-        """
-        self.scene_stack.append(scene)
-
-    def pop_scene(self):
-        """
-        Remove e retorna a cena no topo da pilha
-        :return: Scene
-        """
-        n_scenes = len(self.scene_stack)
-        if n_scenes > 0:
-            return self.scene_stack.pop(n_scenes - 1)
-
-    def swap_scene(self, scene):
-        """
-        Substitui a cena atualmente no topo da pilha pela cena fornecida.
-        :param scene: Cena nova
-        :return: None
-        """
-        self.pop_scene()
-        self.push_scene(scene)
-
-    def get_events(self):
-        """
-        Retorna uma cópia da lista de eventos ocorridos no frame
-        :return:
-        """
-        return self.events.copy()
-
     def blit(self, ID, dest, src=None, fixed=False):
         """
         Desenha uma surface na tela. Possui suporte para renderização
@@ -211,6 +178,34 @@ class System:
         if src and (Point(src.size) != Point(dest.size)):
             texture = pygame.transform.scale(texture, dest.size)
         self.screen.blit(texture, dest, area=src)
+
+    def push_scene(self, scene):
+        """
+        Adiciona uma cena no topo da pilha
+        :param scene: Cena nova
+        :return: None
+        """
+        self.scene_stack.append(scene)
+
+    def pop_scene(self):
+        """
+        Remove e retorna a cena no topo da pilha
+        :return: Scene
+        """
+        n_scenes = len(self.scene_stack)
+        if n_scenes > 0:
+            return self.scene_stack.pop(n_scenes - 1)
+
+    def swap_scene(self, scene):
+        """
+        Substitui a cena atualmente no topo da pilha pela cena fornecida.
+        Retorna a cena removida.
+        :param scene: Cena nova
+        :return: Scene
+        """
+        old_scene = self.pop_scene()
+        self.push_scene(scene)
+        return old_scene
 
     def draw_font(self, text, font_name, size, destination, color=WHITE_COLOR,
                   centered=True, fixed=False):
@@ -262,3 +257,30 @@ class System:
         elif name == "filled_circle":
             pygame.gfxdraw.filled_circle(self.screen, kargs['x'], kargs['y'],
                                   kargs['r'], kargs['color'])
+
+    def get_events(self):
+        """
+        Retorna uma cópia da lista de eventos ocorridos no frame
+        :return:
+        """
+        return self.events.copy()
+
+    def get_mouse_move(self):
+        return (Point(pygame.mouse.get_rel())) / self.scale
+
+    def get_mouse_pos(self):
+        return (Point(pygame.mouse.get_pos()) - self.offset) / self.scale
+
+    def get_animation(self, image, name):
+        return self.texturespecs.get(image, name)
+
+    def get_image_size(self, image):
+        return self.textures.get_size(image)
+
+    def load_assets(self, name):
+        self.textures.load(name)
+        self.texturespecs.load(name)
+
+    def unload_assets(self, name):
+        self.textures.unload(name)
+        self.texturespecs.unload(name)

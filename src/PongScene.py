@@ -1,9 +1,7 @@
 from pygame import Color, Rect, mouse, Surface, gfxdraw
 from random import random, choice
-from engine.Scene import Scene
+from engine import Scene, GameObject, Point
 from DebugInfo import DebugInfo
-from engine.GameObject import GameObject
-from engine.Point import Point
 
 
 class PongField(GameObject):
@@ -40,7 +38,7 @@ class PongBall(GameObject):
 
         if self.dest.left not in range(10, self.system.camera.right - self.dest.width - 10):
             self.scene.state = Scene.STATE_FINISHED
-            self.system.swap_scene(GameOver(self.dest.left < 10))
+            self.system.swap_scene(GameOverScene(self.dest.left < 10))
 
     def render(self):
         self.system.draw_geom('filled_circle', r=10, x=self.dest.centerx, y=self.dest.centery, color=self.color)
@@ -50,7 +48,6 @@ class PongBall(GameObject):
             self.vel += other_go.vel
             self.vel.y *= 10/self.vel.length()
             self.vel.x *= -1
-            print('colided!')
 
 
 class PongPaddle(GameObject):
@@ -92,7 +89,7 @@ class PongPaddlePlayer(PongPaddle):
         PongPaddle.update(self)
 
 
-class MyPong(Scene):
+class PongScene(Scene):
 
     def __init__(self):
         Scene.__init__(self, "MyPong")
@@ -108,7 +105,7 @@ class MyPong(Scene):
         Scene.start(self, game_data)
 
 
-class GameOver(Scene):
+class GameOverScene(Scene):
     def __init__(self, win=False):
         Scene.__init__(self, "GameOver")
         self.text = "You Win!" if win else "Game Over"
@@ -125,7 +122,7 @@ class GameOver(Scene):
 
         if mouse.get_pressed()[0]:
             self.state = Scene.STATE_FINISHED
-            self.system.swap_scene(MyPong())
+            self.system.swap_scene(PongScene())
 
     def render(self):
         # FIXME: não pode fazer essa linha ahsuehaseuh

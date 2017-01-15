@@ -1,9 +1,10 @@
 from os.path import isdir
 from os import listdir
 from pygame import image
+from engine.Point import Point
 
 TEXTURE_PATH = "etc/img/"
-SHARED_FOLDER = "shared/"
+SHARED_FOLDER = TEXTURE_PATH + "shared/"
 FORMATS_SUPPORTED = ("png", "bmp", "jpg")
 
 
@@ -65,3 +66,6 @@ class Texture:
             return self.surfaces[id]
         else:
             raise Exception("Textura inexistente ou não carregada!")
+
+    def get_size(self, id):
+        return Point(self.surfaces.get(id).get_size())

@@ -1,7 +1,8 @@
-from engine.Scene import Scene
+from engine import Scene
 from DebugInfo import DebugInfo
 
-class MyScene(Scene):
+
+class TestScene(Scene):
     def __init__(self):
         Scene.__init__(self, "MyScene")
 
