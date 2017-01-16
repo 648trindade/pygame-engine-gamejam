@@ -46,6 +46,7 @@ class System:
 
         # retângulo da câmera
         self.camera = pygame.Rect((0,0), SCREEN_SIZE)
+        self.camera_limits = pygame.Rect((0,0), SCREEN_SIZE)
 
         # Gerenciador de Texturas
         self.textures = Texture(GAME_DIR)
@@ -288,3 +289,17 @@ class System:
     def register_last_frame(self):
         self.textures.surfaces['last_frame'] = pygame.Surface(SCREEN_SIZE)
         self.textures.surfaces['last_frame'].blit(self.screen, (0, 0))
+
+    def move_camera(self, offset):
+        self.camera.topleft += offset
+        if not self.camera_limits.contains(self.camera):
+            if self.camera.top not in range(self.camera_limits.top,
+                                            self.camera_limits.bottom - self.camera.h):
+                self.camera.top = min(self.camera_limits.bottom - self.camera.h,
+                                      self.camera.top)
+                self.camera.top = max(self.camera_limits.top, self.camera.top)
+            if self.camera.left not in range(self.camera_limits.left,
+                                            self.camera_limits.right - self.camera.w):
+                self.camera.left = min(self.camera_limits.right- self.camera.w,
+                                      self.camera.left)
+                self.camera.left = max(self.camera_limits.left, self.camera.left)

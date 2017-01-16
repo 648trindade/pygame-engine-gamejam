@@ -1,4 +1,7 @@
+import pygame
+
 from engine import Point, Scene, GameObject, Animation
+from engine.TileMap import TileMap
 
 
 class TextureTestScene(Scene):
@@ -9,8 +12,21 @@ class TextureTestScene(Scene):
     def start(self, game_data):
         # cria e adiciona um gato
         self.game_objects.append(Cat(game_data))
-
+        self.tilemap = TileMap('tiles', game_data)
         Scene.start(self, game_data)
+
+        self.system.camera_limits.size = self.tilemap.get_size()
+
+    def update(self):
+        if pygame.key.get_pressed()[pygame.K_LEFT]:
+            self.system.move_camera(Point(-1, 0) * self.system.delta_time)
+        elif pygame.key.get_pressed()[pygame.K_RIGHT]:
+            self.system.move_camera(Point(1, 0) * self.system.delta_time)
+
+        if pygame.key.get_pressed()[pygame.K_UP]:
+            self.system.move_camera(Point(0, -1) * self.system.delta_time)
+        elif pygame.key.get_pressed()[pygame.K_DOWN]:
+            self.system.move_camera(Point(0, 1) * self.system.delta_time)
 
 
 class Cat(GameObject):

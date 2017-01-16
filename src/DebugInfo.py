@@ -10,11 +10,9 @@ class DebugInfo(GameObject):
         self._layer = 10
 
     def render(self):
-        delta_time = self.system.delta_time
-        time  = str(delta_time)[:4].ljust(8)
-        fps   = str(1000/delta_time)[:4].ljust(8)
+        fps   = str(self.system.clock.get_fps())[:4].ljust(8)
         mouse = self.system.get_mouse_pos().int()
-        text = "Time: {t} FPS: {f} Mouse: {m.x} x {m.y}".format(t=time, f=fps, m=mouse)
+        text = "FPS: {f} Mouse: {m.x} x {m.y}".format(f=fps, m=mouse)
 
         box_color = Color(100, 100, 100, 127)
 

@@ -13,6 +13,7 @@ class GameObject(Sprite):
         self.fixed = False
         self.tags = list()
         self.animation = None
+        self.rigid = False
         if self.image:
             self.src = self.system.get_image_size(self.image)
         else:

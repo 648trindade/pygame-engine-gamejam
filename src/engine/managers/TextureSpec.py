@@ -30,10 +30,11 @@ class TextureSpec:
                         specs = json.load(jfile)
                         self.specs[name] = dict()
 
-                    if True:
-                        w = specs['tile_width']
-                        h = specs['tile_height']
-                        num_tiles = specs['num_tiles']
+                    if not specs.get('version'):
+                        # common
+                        w = specs['tilewidth']
+                        h = specs['tileheight']
+                        num_tiles = specs['tilecount']
                         tiles = list()
                         for y in range(0, specs['height'], h):
                             for x in range(0, specs['width'], w):
@@ -48,9 +49,8 @@ class TextureSpec:
                                 'time': value['time'],
                                 'tiles': [tiles[i] for i in value['tiles']]
                             }
-
                         self.specs[name]['tiles'] = tiles
-                        self.specs[name]['type'] = 'common'
+
 
     def unload(self, folder):
         """
@@ -69,7 +69,10 @@ class TextureSpec:
                 extension = file[-4:]
                 # testa se a extensão é uma dessas 3
                 if extension == 'json':
-                    self.specs.pop(name)
+                    try:
+                        self.specs.pop(name)
+                    except:
+                        pass # tentou descarregar tilemap
 
     def get(self, image, name):
         try:
