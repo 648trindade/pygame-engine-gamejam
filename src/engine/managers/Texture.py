@@ -4,7 +4,7 @@ from pygame import image
 from engine.Point import Point
 
 TEXTURE_PATH = "etc/img/"
-SHARED_FOLDER = TEXTURE_PATH + "shared/"
+SHARED_FOLDER = "shared/"
 FORMATS_SUPPORTED = ("png", "bmp", "jpg")
 
 
@@ -33,7 +33,7 @@ class Texture:
                 # testa se a extensão é uma dessas 3
                 if extension in FORMATS_SUPPORTED:
                     # carrega a imagem e põe no dicionario
-                    self.surfaces[name] = image.load(self.path + folder + file)
+                    self.surfaces[name] = image.load(self.path + folder + file).convert_alpha()
 
     def unload(self, folder):
         """

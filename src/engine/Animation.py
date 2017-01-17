@@ -20,7 +20,7 @@ class Animation:
         self.tiles = ani_dict['tiles']
         self.time_tile = ani_dict['time']
 
-    def render(self, dest, fixed=False):
+    def render(self, dest, angle=0, scale=None, fixed=False):
         if self.state == "running":
             self.time_passed += self.system.delta_time
 
@@ -38,7 +38,7 @@ class Animation:
 
         # desenha a animação
         src = self.tiles[self.index]
-        self.system.blit(self.image, dest, src, fixed=fixed)
+        self.system.blit(self.image, dest, src, fixed=fixed, angle=angle, scale=scale)
 
     def reset(self):
         self.index = 0

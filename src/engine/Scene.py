@@ -9,14 +9,17 @@ class Scene:
     STATE_PAUSED = 3
     STATE_FINISHED = 4
 
-    def __init__(self, name):
+    def __init__(self, name=None):
         """
         Construtor da cena. Classes derivadas devem chamar esse construtor
         :param name: Nome da cena
         """
-        self.name = name
+
+        self.name = name if name else type(self).__name__
         self.state = Scene.STATE_NEW
         self.system = None
+        self.screen_size = None
+        self.shared = dict()
         self.game_objects = list()
         self.layers = LayerRender()
 
@@ -28,8 +31,7 @@ class Scene:
         :return: None
         """
         assert self == game_data['scene']
-        self.system = game_data['system']
-        self.screen_size = game_data['screen_size']
+        self.__dict__.update(game_data)
         self.layers.add(*self.game_objects)
 
     def resume(self):

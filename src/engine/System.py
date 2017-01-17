@@ -10,7 +10,7 @@ from engine.managers.TextureSpec import TextureSpec
 
 # tamanho fake da tela. Todos os objetos pensam que a tela tem esse tamanho
 SCREEN_SIZE = Point(1920, 1080)
-WINDOW_SIZE = Point(800, 600)
+WINDOW_SIZE = Point(960, 540)
 GAME_NAME = "Jogo"
 GAME_DIR = os.path.dirname(os.path.abspath(sys.argv[0])) + "/../"
 WHITE_COLOR = (255, 255, 255)
@@ -27,6 +27,8 @@ class System:
         # cria a surface que o jogo enxerga, com o tamanho fake
         self.screen = pygame.Surface(SCREEN_SIZE)
 
+        self.fullscreen = False
+
         # cria a janela
         self.window_size = None
         self.window = None
@@ -34,6 +36,7 @@ class System:
         self.screen_real_size = None
         self.offset = None
         self.set_window(WINDOW_SIZE)
+        self.mouse_rel = None
 
         pygame.display.set_caption(GAME_NAME)
         # pygame.display.set_icon()
@@ -45,8 +48,8 @@ class System:
         self.events = None
 
         # retângulo da câmera
-        self.camera = pygame.Rect((0,0), SCREEN_SIZE)
-        self.camera_limits = pygame.Rect((0,0), SCREEN_SIZE)
+        self.camera = pygame.Rect((0, 0), SCREEN_SIZE)
+        self.camera_limits = pygame.Rect((0, 0), SCREEN_SIZE)
 
         # Gerenciador de Texturas
         self.textures = Texture(GAME_DIR)
@@ -70,7 +73,11 @@ class System:
         :param new_size: novo tamanho da janela
         :return: None
         """
-        self.window = pygame.display.set_mode(new_size, pygame.HWACCEL | pygame.RESIZABLE)
+        if self.fullscreen:
+            flags = pygame.FULLSCREEN | pygame.HWSURFACE | pygame.DOUBLEBUF
+        else:
+            flags = pygame.NOFRAME
+        self.window = pygame.display.set_mode(new_size, flags)
         self.window_size = Point(self.window.get_size())
 
         # Proporção em largura e altura da janela com relação ao tamanho fake
@@ -88,6 +95,14 @@ class System:
         #  tarjas pretas)
         self.offset = (self.window_size - self.screen_real_size)//2
 
+    def set_fullscreen(self, value):
+        if self.fullscreen ^ value:
+            self.fullscreen = value
+            if self.fullscreen:
+                self.set_window(Point(pygame.display.list_modes()[0]))
+            else:
+                self.set_window(self.window_size)
+
     def run(self):
         """
         Loop das cenas. Roda uma cena até que termine, então procura por novas
@@ -97,7 +112,8 @@ class System:
         game_data = {
             'system': self,
             'screen_size': SCREEN_SIZE,
-            'scene': None
+            'scene': None,
+            'shared': dict()
         }
 
         while len(self.scene_stack) > 0:
@@ -130,6 +146,7 @@ class System:
         """
         # pega os eventos
         self.delta_time = self.clock.tick(60)
+        self.mouse_rel = Point(pygame.mouse.get_rel()) / self.scale
         self.events = pygame.event.get()
         for event in self.events:
             if event.type is pygame.QUIT:
@@ -152,7 +169,7 @@ class System:
         self.window.blit(viewport, self.offset)
         pygame.display.update()
 
-    def blit(self, ID, dest, src=None, fixed=False):
+    def blit(self, ID, dest, src=None, fixed=False, angle=0, scale=None):
         """
         Desenha uma surface na tela. Possui suporte para renderização
          independente da posição da câmera, como é o caso de menus. Se o tamanho
@@ -165,20 +182,46 @@ class System:
         """
         # Pega a textura do manager de texturas
         texture = self.textures.get(ID)
+
+        # Se um retangulo de origem nao foi definido, pega o da textura
+        if not src:
+            src = texture.get_rect()
+        # Se o retangulo de origem for difente do da textura, pega a porção
+        elif src != texture.get_rect():
+            texture = texture.subsurface(src)
+
+        # Calcula tamanho de destino a partir de escala
+        if scale is not None:
+            if type(dest) is pygame.Rect:
+                dest.size = Point(src.size) * scale
+            else:
+                dest = pygame.Rect(dest, Point(src.size) * scale)
+
+        if not self.camera.colliderect(dest):
+            # retangulo da imagem esta fora da camera
+            return
+
         # Se a posição é relativa a câmera
         if not fixed:
-            # Se alguma porção da surface está aparecendo na tela
-            if self.camera.colliderect(dest):
-                # Pega a posição relativa a câmera
-                dest -= Point(self.camera.topleft)
-            else:
-                # retangulo da imagem esta fora da camera
-                return
+            # Pega a posição relativa a câmera
+            dest -= Point(self.camera.topleft)
+
         # se os retangulos de origem e destino tem tamanhos diferentes,
         #  redimensiona a imagem para o tamanho de destino
-        if src and (Point(src.size) != Point(dest.size)):
+        if Point(src.size) != Point(dest.size):
             texture = pygame.transform.scale(texture, dest.size)
-        self.screen.blit(texture, dest, area=src)
+
+        # se necessitar rotacionar
+        if angle % 360 != 0:
+            texture = pygame.transform.rotate(texture, angle)
+            src = texture.get_rect()
+            src.center = dest.center
+            dest = src
+
+        self.screen.blit(texture, dest.topleft)
+
+        # retorna o retangulo da tela que foi renderizado
+        return dest
 
     def push_scene(self, scene):
         """
@@ -221,7 +264,8 @@ class System:
         :param fixed: Determina se a renderização é relativa a camera ou não
         :return: None
         """
-        texture, src = self.fonts.render(text, font_name, size, color)
+        texture = self.fonts.render(text, font_name, size, color)[0]
+        src = texture.get_rect()
         dest = pygame.Rect(destination, src.size)
         if centered:
             dest.topleft = Point(dest.topleft) - Point(src.center)
@@ -235,6 +279,12 @@ class System:
                 # retangulo da imagem esta fora da camera
                 return
         self.screen.blit(texture, dest)
+
+    def calculate_size_text(self, text, font_name, size):
+        return self.fonts.render(text, font_name, size, (0, 0, 0))[0].get_rect()
+        # src = self.fonts.render(text, font_name, size, (0, 0, 0))[1]
+        # src.topleft = (0, 0)
+        # return src
 
     def draw_geom(self, name, **kargs):
 
@@ -254,10 +304,10 @@ class System:
                                   kargs['r'], kargs['color'])
         elif name == "aacicle":
             pygame.gfxdraw.aacircle(self.screen, kargs['x'], kargs['y'],
-                                  kargs['r'], kargs['color'])
+                                    kargs['r'], kargs['color'])
         elif name == "filled_circle":
             pygame.gfxdraw.filled_circle(self.screen, kargs['x'], kargs['y'],
-                                  kargs['r'], kargs['color'])
+                                         kargs['r'], kargs['color'])
 
     def get_events(self):
         """
@@ -267,7 +317,7 @@ class System:
         return self.events.copy()
 
     def get_mouse_move(self):
-        return (Point(pygame.mouse.get_rel())) / self.scale
+        return self.mouse_rel
 
     def get_mouse_pos(self):
         return (Point(pygame.mouse.get_pos()) - self.offset) / self.scale
@@ -299,7 +349,11 @@ class System:
                                       self.camera.top)
                 self.camera.top = max(self.camera_limits.top, self.camera.top)
             if self.camera.left not in range(self.camera_limits.left,
-                                            self.camera_limits.right - self.camera.w):
+                                             self.camera_limits.right - self.camera.w):
                 self.camera.left = min(self.camera_limits.right- self.camera.w,
-                                      self.camera.left)
+                                       self.camera.left)
                 self.camera.left = max(self.camera_limits.left, self.camera.left)
+
+    def reset_camera(self):
+        self.camera.topleft = Point(0, 0)
+

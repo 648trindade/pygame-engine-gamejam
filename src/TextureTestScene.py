@@ -1,5 +1,6 @@
 import pygame
 
+from DebugInfo import DebugInfo
 from engine import Point, Scene, GameObject, Animation
 from engine.TileMap import TileMap
 
@@ -12,6 +13,7 @@ class TextureTestScene(Scene):
     def start(self, game_data):
         # cria e adiciona um gato
         self.game_objects.append(Cat(game_data))
+        self.game_objects.append(DebugInfo(game_data))
         self.tilemap = TileMap('tiles', game_data)
         Scene.start(self, game_data)
 

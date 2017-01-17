@@ -223,6 +223,12 @@ class Point:
             elif key == 'y':
                 self.y = value
 
+    def __neg__(self):
+        """
+        Retorna ponto negativado, ou vetor inverso
+        """
+        return Point(-self.x, -self.y)
+
     def __eq__(self, other):
         """
         Testa se os pontos são iguais
