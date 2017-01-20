@@ -12,7 +12,7 @@ class LayerRender(LU):
         """
         rect_list = list()
         for sprite in self.sprites():
-            #system.blit(sprite.image, sprite.rect, sprite.src, sprite.fixed)
-            sprite.render()
-            rect_list.append(sprite.dest)
+            if sprite.renderable:
+                sprite.render()
+                rect_list.append(sprite.dest)
         return rect_list

@@ -1,4 +1,4 @@
-from pygame.sprite import spritecollide
+from pygame.sprite import spritecollide, collide_mask
 from engine.LayerRender import LayerRender
 from engine import GameObject
 from engine import Physics
@@ -22,6 +22,7 @@ class Scene:
         self.shared = dict()
         self.game_objects = list()
         self.layers = LayerRender()
+        self.event_queue = list()
 
     def start(self, game_data):
         """
@@ -70,15 +71,35 @@ class Scene:
             self.system.render()
 
     def update(self):
+        to_remove = []
         for go in self.game_objects:
-            collisions = spritecollide(go, self.layers, False)
-            if collisions.count(go) > 0:
-                collisions.remove(go)
-            for go_collided in collisions:
-                go.on_collision(go_collided)
+            if go.updatable:
+                go.update()
+            if not go.alive:
+                go.kill()
+                to_remove.append(go)
+
+        for event in self.event_queue:
+            event['time'] -= self.system.delta_time
+            if event['time'] <= 0:
+                if callable(event['event']):
+                    event['event']()
+                to_remove.append(event)
+
+        for obj in to_remove:
+            if type(obj) is dict:
+                self.event_queue.remove(obj)
+            else:
+                self.game_objects.remove(go)
 
         for go in self.game_objects:
-            go.update()
+            if go.updatable:
+                collisions = spritecollide(go, self.layers, False)#, collide_mask)
+                if collisions.count(go) > 0:
+                    collisions.remove(go)
+                for go_collided in collisions:
+                    if go_collided.renderable:
+                        go.on_collision(go_collided)
 
     def render(self):
         self.layers.draw(self.system)
@@ -181,3 +202,6 @@ class Scene:
         :return: bool
         """
         return self.state is Scene.STATE_RUNNING
+
+    def enqueue_event(self, event, time=0):
+        self.event_queue.append({'event': event, 'time': time})

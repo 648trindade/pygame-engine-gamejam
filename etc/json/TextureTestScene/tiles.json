@@ -19,7 +19,7 @@
         {
          "columns":16,
          "firstgid":1,
-         "image":"..\/..\/..\/..\/..\/..\/..\/tmp\/tiles.png",
+         "image":"etc/img/TextureTestScene/tiles.png",
          "imageheight":1080,
          "imagewidth":1920,
          "margin":0,

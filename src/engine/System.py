@@ -50,6 +50,7 @@ class System:
         # retângulo da câmera
         self.camera = pygame.Rect((0, 0), SCREEN_SIZE)
         self.camera_limits = pygame.Rect((0, 0), SCREEN_SIZE)
+        self.camera_target = None
 
         # Gerenciador de Texturas
         self.textures = Texture(GAME_DIR)
@@ -155,6 +156,9 @@ class System:
             elif event.type is pygame.VIDEORESIZE:
                 self.set_window(Point(event.size))
 
+        if self.camera_target:
+            self.move_camera(Point(self.camera_target.dest.center) - Point(self.camera.center))
+
         # limpa a tela
         self.window.fill(pygame.Color(0, 0, 0))
         self.screen.fill(pygame.Color(255, 255, 255))
@@ -217,6 +221,16 @@ class System:
             src = texture.get_rect()
             src.center = dest.center
             dest = src
+
+        # screen = pygame.Rect((0, 0), SCREEN_SIZE)
+        # if not screen.contains(dest):
+        #      clip_area = screen.clip(dest)
+        #      src_area = clip_area - Point(dest.topleft)
+        #      dest = clip_area
+        #      texture = texture.subsurface(src_area)
+        #      self.screen.blit(texture, dest.topleft, src_area)
+        # else:
+        #     self.screen.blit(texture, dest.topleft)
 
         self.screen.blit(texture, dest.topleft)
 

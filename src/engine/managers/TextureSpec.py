@@ -47,7 +47,8 @@ class TextureSpec:
                         for ani_name, value in specs['animations'].items():
                             self.specs[name]['animations'][ani_name] = {
                                 'time': value['time'],
-                                'tiles': [tiles[i] for i in value['tiles']]
+                                'tiles': [tiles[i] for i in value['tiles']],
+                                'next': value.get('next')
                             }
                         self.specs[name]['tiles'] = tiles
 

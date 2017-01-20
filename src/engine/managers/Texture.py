@@ -1,6 +1,8 @@
 from os.path import isdir
 from os import listdir
-from pygame import image
+
+import pygame
+from pygame import image, mask
 from engine.Point import Point
 
 TEXTURE_PATH = "etc/img/"
@@ -13,6 +15,7 @@ class Texture:
     def __init__(self, game_dir):
         self.path = game_dir + TEXTURE_PATH
         self.surfaces = dict()
+        self.masks = dict()
         self.load(SHARED_FOLDER)
 
     def load(self, folder):
@@ -34,6 +37,7 @@ class Texture:
                 if extension in FORMATS_SUPPORTED:
                     # carrega a imagem e põe no dicionario
                     self.surfaces[name] = image.load(self.path + folder + file).convert_alpha()
+                    self.masks[name] = mask.from_surface(self.surfaces[name])
 
     def unload(self, folder):
         """
@@ -54,6 +58,7 @@ class Texture:
                 if extension in FORMATS_SUPPORTED:
                     # carrega a imagem e põe no dicionario
                     self.surfaces.pop(name)
+                    self.masks.pop(name)
 
     def get(self, id):
         """
